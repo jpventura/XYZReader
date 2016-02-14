@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Joao Paulo Fernandes Ventura.
+ * Copyright 2015 JP Ventura
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,17 @@ import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Rect;
-import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ShareCompat;
+import android.support.v7.graphics.Palette;
+import android.support.v7.graphics.Palette.PaletteAsyncListener;
 import android.text.Html;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
@@ -39,14 +43,15 @@ import android.widget.TextView;
 import com.jpventura.xyzreader.R;
 import com.jpventura.xyzreader.data.ArticleLoader;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Callback;
 
 /**
  * A fragment representing a single Article detail screen. This fragment is
  * either contained in a {@link ArticleListActivity} in two-pane mode (on
  * tablets) or a {@link ArticleDetailActivity} on handsets.
  */
-public class ArticleDetailFragment extends Fragment implements
-        LoaderManager.LoaderCallbacks<Cursor> {
+public class ArticleDetailFragment extends Fragment
+        implements Callback, LoaderManager.LoaderCallbacks<Cursor>, PaletteAsyncListener {
     private static final String TAG = "ArticleDetailFragment";
 
     public static final String ARG_ITEM_ID = "item_id";
@@ -66,6 +71,10 @@ public class ArticleDetailFragment extends Fragment implements
     private int mScrollY;
     private boolean mIsCard = false;
     private int mStatusBarFullOpacityBottom;
+
+    private TextView mTitleView;
+    private TextView mSubitleView;
+    private TextView mBodyView;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -113,7 +122,7 @@ public class ArticleDetailFragment extends Fragment implements
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
         mDrawInsetsFrameLayout = (DrawInsetsFrameLayout)
                 mRootView.findViewById(R.id.draw_insets_frame_layout);
@@ -156,6 +165,7 @@ public class ArticleDetailFragment extends Fragment implements
     }
 
     private void updateStatusBar() {
+
         int color = 0;
         if (mPhotoView != null && mTopInset != 0 && mScrollY > 0) {
             float f = progress(mScrollY,
@@ -189,35 +199,37 @@ public class ArticleDetailFragment extends Fragment implements
             return;
         }
 
-        TextView titleView = (TextView) mRootView.findViewById(R.id.article_title);
-        TextView bylineView = (TextView) mRootView.findViewById(R.id.article_byline);
-        bylineView.setMovementMethod(new LinkMovementMethod());
-        TextView bodyView = (TextView) mRootView.findViewById(R.id.article_body);
-        bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
+        mTitleView = (TextView) mRootView.findViewById(R.id.article_title);
+        mSubitleView = (TextView) mRootView.findViewById(R.id.article_byline);
+        mSubitleView.setMovementMethod(new LinkMovementMethod());
+        mBodyView = (TextView) mRootView.findViewById(R.id.article_body);
 
-        if (mCursor != null) {
-            mRootView.setAlpha(0);
-            mRootView.setVisibility(View.VISIBLE);
-            mRootView.animate().alpha(1);
-            titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
-            bylineView.setText(Html.fromHtml(
-                    DateUtils.getRelativeTimeSpanString(
-                            mCursor.getLong(ArticleLoader.Query.PUBLISHED_DATE),
-                            System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
-                            DateUtils.FORMAT_ABBREV_ALL).toString()
-                            + " by <font color='#ffffff'>"
-                            + mCursor.getString(ArticleLoader.Query.AUTHOR)
-                            + "</font>"));
-            bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY)));
-            Picasso.with(getActivity())
-                    .load(mCursor.getString(ArticleLoader.Query.PHOTO_URL))
-                    .into(mPhotoView);
-        } else {
+
+        if (null == mCursor) {
             mRootView.setVisibility(View.GONE);
-            titleView.setText("N/A");
-            bylineView.setText("N/A" );
-            bodyView.setText("N/A");
+            mTitleView.setText("N/A");
+            mSubitleView.setText("N/A");
+            mBodyView.setText("N/A");
+            return;
         }
+
+        mRootView.setAlpha(0);
+        mRootView.setVisibility(View.VISIBLE);
+        mRootView.animate().alpha(1);
+        mTitleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
+        mSubitleView.setText(Html.fromHtml(
+                DateUtils.getRelativeTimeSpanString(
+                        mCursor.getLong(ArticleLoader.Query.PUBLISHED_DATE),
+                        System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
+                        DateUtils.FORMAT_ABBREV_ALL).toString()
+                        + " by <font color='#ffffff'>"
+                        + mCursor.getString(ArticleLoader.Query.AUTHOR)
+                        + "</font>"));
+        mBodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY)));
+
+        Picasso.with(getActivity())
+                .load(mCursor.getString(ArticleLoader.Query.PHOTO_URL))
+                .into(mPhotoView, this);
     }
 
     @Override
@@ -227,10 +239,8 @@ public class ArticleDetailFragment extends Fragment implements
 
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        if (!isAdded()) {
-            if (cursor != null) {
-                cursor.close();
-            }
+        if (!isAdded() && (null != cursor)) {
+            cursor.close();
             return;
         }
 
@@ -248,6 +258,38 @@ public class ArticleDetailFragment extends Fragment implements
     public void onLoaderReset(Loader<Cursor> cursorLoader) {
         mCursor = null;
         bindViews();
+    }
+
+    @Override
+    public void onError() {
+    }
+
+    @Override
+    public void onGenerated(Palette palette) {
+        int primaryColor = mRootView.getResources().getColor(R.color.primary);
+        int primaryDarkColor = mRootView.getResources().getColor(R.color.primary_dark);
+        int darkMutedColor = palette.getDarkMutedColor(primaryDarkColor);
+
+        FloatingActionButton fab = (FloatingActionButton) mRootView.findViewById(R.id.share_fab);
+        int lightVibrantColor = palette.getLightVibrantColor(getResources().getColor(android.R.color.white));
+        int lightMutedColor = palette.getLightVibrantColor(getResources().getColor(R.color.text_primary));
+        int vibrantColor = palette.getVibrantColor(getResources().getColor(R.color.accent));
+
+        fab.setRippleColor(lightVibrantColor);
+
+        fab.setBackgroundTintList(ColorStateList.valueOf(vibrantColor));
+
+        mRootView.findViewById(R.id.meta_bar).setBackgroundColor(darkMutedColor);
+        mTitleView.setTextColor(lightMutedColor);
+        mBodyView.setLinkTextColor(vibrantColor);
+        mMutedColor = palette.getDarkMutedColor(0xff333333);
+
+        updateStatusBar();
+    }
+
+    @Override
+    public void onSuccess() {
+        Palette.from(((BitmapDrawable) mPhotoView.getDrawable()).getBitmap()).generate(this);
     }
 
     public int getUpButtonFloor() {
