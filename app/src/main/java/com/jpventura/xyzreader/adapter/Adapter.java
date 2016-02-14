@@ -23,13 +23,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.jpventura.xyzreader.R;
 import com.jpventura.xyzreader.data.ArticleLoader;
-import com.jpventura.xyzreader.ui.DynamicHeightNetworkImageView;
-import com.jpventura.xyzreader.ui.ImageLoaderHelper;
 import com.jpventura.xyzreader.ui.OnItemSelectedListener;
+import com.squareup.picasso.Picasso;
 
 public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> implements OnClickListener {
     private Context mContext;
@@ -68,10 +68,9 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> implements
                         DateUtils.FORMAT_ABBREV_ALL).toString()
                         + " by "
                         + mCursor.getString(ArticleLoader.Query.AUTHOR));
-        holder.thumbnailView.setImageUrl(
-                mCursor.getString(ArticleLoader.Query.THUMB_URL),
-                ImageLoaderHelper.getInstance(mContext).getImageLoader());
-        holder.thumbnailView.setAspectRatio(mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
+        Picasso.with(mContext)
+                .load(mCursor.getString(ArticleLoader.Query.THUMB_URL))
+                .into(holder.thumbnailView);
     }
 
     @Override
@@ -91,13 +90,13 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> implements
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        public DynamicHeightNetworkImageView thumbnailView;
+        public ImageView thumbnailView;
         public TextView titleView;
         public TextView subtitleView;
 
         public ViewHolder(View view) {
             super(view);
-            thumbnailView = (DynamicHeightNetworkImageView) view.findViewById(R.id.thumbnail);
+            thumbnailView = (ImageView) view.findViewById(R.id.thumbnail);
             titleView = (TextView) view.findViewById(R.id.article_title);
             subtitleView = (TextView) view.findViewById(R.id.article_subtitle);
         }
