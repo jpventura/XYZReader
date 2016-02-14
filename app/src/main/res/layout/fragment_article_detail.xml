@@ -1,4 +1,5 @@
 <com.jpventura.xyzreader.ui.DrawInsetsFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/draw_insets_frame_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -8,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <FrameLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -20,10 +21,9 @@
                 <!--suppress AndroidLintContentDescription -->
                 <ImageView
                     android:id="@+id/photo"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                     />
-
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/photo_height"
+                    android:scaleType="centerCrop" />
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="112dp"
@@ -32,14 +32,16 @@
             </FrameLayout>
 
             <com.jpventura.xyzreader.ui.MaxWidthLinearLayout
+                android:id="@+id/max_width_linear_layout"
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_below="@+id/photo_container"
                 android:layout_gravity="center_horizontal"
                 android:maxWidth="@dimen/detail_card_max_width"
-                android:background="#fff"
+                android:background="#ff212121"
                 android:elevation="2dp"
-                android:layout_marginTop="@dimen/detail_card_top_margin">
+                android:layout_centerHorizontal="true">
 
                 <LinearLayout
                     android:id="@+id/meta_bar"
@@ -54,39 +56,35 @@
 
                     <TextView
                         android:id="@+id/article_title"
-                        style="?android:attr/textAppearanceLarge"
+                        style="@style/TextAppearance.Bacon.Headline"
                         android:layout_width="match_parent"
+                        android:singleLine="false"
                         android:layout_height="wrap_content"
                         android:paddingBottom="@dimen/detail_metabar_title_bottom_padding"
-                        android:fontFamily="sans-serif-condensed"
-                        android:textColor="#fff"
-                        android:textStyle="bold"
-                        android:textSize="@dimen/detail_title_text_size"
-                        android:lineSpacingMultiplier="0.9" />
+                        android:textColor="#fff" />
 
                     <TextView
                         android:id="@+id/article_byline"
-                        style="?android:attr/textAppearanceSmall"
+                        style="@style/TextAppearance.Bacon.Subhead"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="#8fff" />
+                        android:layout_height="wrap_content" />
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/article_body"
-                    style="?android:attr/textAppearanceMedium"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="@dimen/detail_body_bottom_margin"
-                    android:textColor="@color/ltgray"
-                    android:textColorLink="@color/accent"
-                    android:textSize="@dimen/detail_body_text_size" />
+            <TextView
+                android:id="@+id/article_body"
+                style="@style/TextAppearance.Bacon.Body1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
 
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="24dp"
+                android:paddingBottom="@dimen/detail_body_bottom_margin" />
             </com.jpventura.xyzreader.ui.MaxWidthLinearLayout>
-        </FrameLayout>
+        </RelativeLayout>
     </com.jpventura.xyzreader.ui.ObservableScrollView>
 
-    <ImageButton android:id="@+id/share_fab"
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/share_fab"
         android:stateListAnimator="@anim/fab_state_list_anim"
         android:background="@drawable/add_fab_background"
         android:layout_gravity="bottom|end"
@@ -96,6 +94,7 @@
         android:layout_height="56dp"
         android:src="@drawable/ic_share"
         android:elevation="@dimen/fab_elevation"
+        app:pressedTranslationZ="@dimen/fab_press_translation_z"
         android:contentDescription="@string/action_share" />
 
 </com.jpventura.xyzreader.ui.DrawInsetsFrameLayout>

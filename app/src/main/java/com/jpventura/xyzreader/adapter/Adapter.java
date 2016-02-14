@@ -18,7 +18,6 @@ package com.jpventura.xyzreader.adapter;
 import android.content.Context;
 import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
-import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -29,48 +28,36 @@ import android.widget.TextView;
 import com.jpventura.xyzreader.R;
 import com.jpventura.xyzreader.data.ArticleLoader;
 import com.jpventura.xyzreader.ui.OnItemSelectedListener;
+import com.jpventura.xyzreader.widget.CursorRecyclerAdapter;
+
 import com.squareup.picasso.Picasso;
 
-public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> implements OnClickListener {
+public class Adapter extends CursorRecyclerAdapter<Adapter.ViewHolder>
+        implements OnClickListener {
     private Context mContext;
-    private Cursor mCursor;
     private OnItemSelectedListener<Long> mOnItemSelectedListener;
 
     public Adapter(Context context, Cursor cursor) {
+        super(cursor);
         mContext = context;
-        mCursor = cursor;
-    }
-
-    @Override
-    public long getItemId(int position) {
-        mCursor.moveToPosition(position);
-        return mCursor.getLong(ArticleLoader.Query._ID);
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        LayoutInflater inflater = LayoutInflater.from(mContext);
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.list_item_article, parent, false);
-        final ViewHolder vh = new ViewHolder(view);
         view.setOnClickListener(this);
-        return vh;
+        return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        mCursor.moveToPosition(position);
-        holder.itemView.setTag(Long.valueOf(mCursor.getLong(ArticleLoader.Query._ID)));
-        holder.titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
-        holder.subtitleView.setText(
-                DateUtils.getRelativeTimeSpanString(
-                        mCursor.getLong(ArticleLoader.Query.PUBLISHED_DATE),
-                        System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
-                        DateUtils.FORMAT_ABBREV_ALL).toString()
-                        + " by "
-                        + mCursor.getString(ArticleLoader.Query.AUTHOR));
+    public void onBindViewHolderCursor(ViewHolder holder, Cursor data) {
+        holder.itemView.setTag(Long.valueOf(data.getLong(ArticleLoader.Query._ID)));
+        holder.titleView.setText(data.getString(ArticleLoader.Query.TITLE));
+        holder.subtitleView.setText(data.getString(ArticleLoader.Query.AUTHOR));
         Picasso.with(mContext)
-                .load(mCursor.getString(ArticleLoader.Query.THUMB_URL))
-                .into(holder.thumbnailView);
+                .load(data.getString(ArticleLoader.Query.THUMB_URL))
+                .into(holder.thumbnailView, new GetThumbnailPaletteCommand(holder.itemView));
     }
 
     @Override
@@ -80,16 +67,11 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> implements
         }
     }
 
-    @Override
-    public int getItemCount() {
-        return mCursor.getCount();
-    }
-
     public void setOnItemSelectedListener(OnItemSelectedListener<Long> onItemSelectedListener) {
         mOnItemSelectedListener = onItemSelectedListener;
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         public ImageView thumbnailView;
         public TextView titleView;
         public TextView subtitleView;

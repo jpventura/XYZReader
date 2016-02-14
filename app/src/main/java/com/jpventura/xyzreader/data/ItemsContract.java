@@ -6,7 +6,7 @@ public class ItemsContract {
 	public static final String CONTENT_AUTHORITY = "com.jpventura.xyzreader";
 	public static final Uri BASE_URI = Uri.parse("content://com.jpventura.xyzreader");
 
-	interface ItemsColumns {
+	public interface ItemsColumns {
 		/** Type: INTEGER PRIMARY KEY AUTOINCREMENT */
 		String _ID = "_id";
 		/** Type: TEXT */
