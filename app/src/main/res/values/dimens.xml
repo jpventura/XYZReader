@@ -2,10 +2,22 @@
     <!-- detail -->
     <dimen name="detail_title_text_size">32sp</dimen>
     <dimen name="detail_body_text_size">22sp</dimen>
-    <item name="detail_body_line_spacing_multiplier" format="float" type="fraction">1.25</item>
 
     <dimen name="fab_elevation">2dp</dimen>
     <dimen name="fab_press_translation_z">6dp</dimen>
     <dimen name="fab_margin">24dp</dimen>
 
+    <dimen name="card_view_margin">4dp</dimen>
+    <dimen name="thumbnail_min_height">112dp</dimen>
+    <dimen name="thumbnail_min_width">172dp</dimen>
+
+    <dimen name="photo_height">240dp</dimen>
+    <dimen name="photo_min_height">200dp</dimen>
+    <dimen name="photo_min_width">360dp</dimen>
+
+    <dimen name="toolbar_elevation">4dp</dimen>
+
+    <dimen name="text_size_body_1">14sp</dimen>
+    <dimen name="text_size_headline">24sp</dimen>
+    <item name="text_line_spacing_body_1" format="float" type="fraction">1.2</item>
 </resources>
